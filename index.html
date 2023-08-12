@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <style>
+        body {background-color: black;}
+
+        h1 {text-align:center; color: white; height: 100px}
+
+        .grid-container {
+            margin: 1em;
+            display: grid; width:calc(100vw - 4em); height:calc(100vh - 100px - 4em);
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            color: white;
+            background-color: white;
+            gap: 0.5em;
+
+            position:relative;
+            
+        }
+
+        .grid-container > button {
+            background-color: black;
+            color: white;
+            border-style: none;
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: 50% 50%;
+            
+        }
+
+        .grid-container > button:disabled {
+            cursor: auto;
+        }
+
+        .grid-container.circle > button {
+            cursor: url('./images/circle.png'), pointer;
+        }
+
+        .grid-container.cross > button {
+            cursor: url('./images/cross.png'), pointer;
+        }
+
+        .grid-container > button.circle {
+            background-image: url('./images/circle.png')
+        }
+
+        .grid-container > button.cross {
+            background-image: url('./images/cross.png')
+        }
+
+        .grid-container > .strikethrough {
+            position: absolute;
+            border-radius: 0.5em;
+            border: 5px solid red;
+
+        }
+        .grid-container > .strikethrough.horizontal {
+            top: 0px;
+            left: 0px;
+            width:100%;
+            height: 1px;
+
+        }
+        .grid-container > .strikethrough.vertical {
+            top: 0px;
+            left: 0px;
+            width:1px;
+            height: 100%;
+
+        }
+
+
+        h1 span#resultPane img {
+            max-width: 1em;
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+    <h1>Tic Tac Toe <button>Reset</button> <span id="resultPane"></span></h1>
+    <div class="grid-container">
+        <button></button>
+        <button></button>
+        <button></button>
+        <button></button>
+        <button></button>
+        <button></button>
+        <button></button>
+        <button></button>
+        <button></button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+    <script>
+    $( function() {
+
+        var iButtonClicked = 0;
+
+        var fnButtonReset = function() {
+            $(".grid-container").addClass("cross")
+            $(".grid-container > button").each(function() {
+                $(this).attr("data-status", "empty").removeClass("cross circle").removeAttr("disabled").text("");
+            });
+            $("#resultPane").html("");
+            iButtonClicked = 0;
+            $(".grid-container .strikethrough").remove();
+        }
+
+        var fnCheckWin = function() {
+            //Button array is 0-based index from 0 to 8, listed from top to buttom, left to right.
+            //Just need to check button 1, 3, 4, 5, 7 if they have been clicked and then further their neigbouring button.
+
+            var arrButtonsForChecking = [1,3,4,5,7];
+            var arrButtonStatus = [];
+            var iTicTacToeLength = 3;
+            var bWin = false;
+            var iButtonHeight = $(".grid-container > button:first").height();
+            var iButtonWidth = $(".grid-container > button:first").width();
+
+            $(".grid-container > button").each(function() {arrButtonStatus.push($(this).attr("data-status"))})
+
+            console.log(arrButtonStatus)
+            for (i in arrButtonsForChecking) {
+                var iCurrentButtonIndex = arrButtonsForChecking[i];
+                var strButtonStatus = arrButtonStatus[iCurrentButtonIndex];
+
+            
+
+                if(strButtonStatus == "cross" || strButtonStatus == "circle") {
+
+                    //if iRow = 1, do the horizontal checking
+                    var iRow = Math.floor(iCurrentButtonIndex / iTicTacToeLength);                    
+                    //if iColumn = 1, do the vertical checking
+                    var iColumn = iCurrentButtonIndex % iTicTacToeLength;
+                    //if both iRow and iColumn are 1, do all horizontal, vertical and diagonal checking
+
+                    if(iRow == 1) {
+                        //Vertical Checking - check previous row (i.e. currentIndex - TicTacToeLength) and next row (i.e. currentIndex + TicTacToeLength) if all status are matched to either cross or circle
+                        if(arrButtonStatus[iCurrentButtonIndex - iTicTacToeLength] == arrButtonStatus[iCurrentButtonIndex + iTicTacToeLength] && arrButtonStatus[iCurrentButtonIndex - iTicTacToeLength] == strButtonStatus) {
+                            bWin = true;
+                            $("<div/>").addClass("strikethrough vertical").css("left", ((iColumn*2+1)*100/(iTicTacToeLength*2))+"%").appendTo(".grid-container");
+                            //alert("Vertical Win: " + iCurrentButtonIndex);
+                        }
+                    }
+                    if(iColumn == 1) {
+                        //Horizontal Checking - check previous column (i.e. currentIndex - 1) and next column (i.e. currentIndex + 1) if all status are matched to either cross or circle
+                        if(arrButtonStatus[iCurrentButtonIndex - 1] == arrButtonStatus[iCurrentButtonIndex + 1] && arrButtonStatus[iCurrentButtonIndex - 1] == strButtonStatus) {
+                            bWin = true;
+                            
+                            var fRadian = Math.atan($(this))
+
+                            $("<div/>").addClass("strikethrough vertical").css("top", ((iRow*2+1)*100/(iTicTacToeLength*2))+"%").appendTo(".grid-container");
+                            //alert("Horizontal Win: " + iCurrentButtonIndex);
+                        }
+                    }
+                    if(iRow == 1 && iColumn == 1) {
+                        //Diagonal Checking - check 2 lines 
+                        // 1. Backslash Diagonal - top left button (i.e. currentIndex - 1 - TicTacToeLength) and bottom right button (i.e. currentIndex + 1 + TicTacToeLength) 
+                        // 2. Slash Diagonal - top right button (i.e. currentIndex + 1 - TicTacToeLength) and bottom left button (i.e. currentIndex - 1 + TicTacToeLength)
+
+                        var fRadian = Math.atan(iButtonHeight / iButtonWidth)
+                        var fDegree = fRadian * 180 / Math.PI
+
+                        if(arrButtonStatus[iCurrentButtonIndex - 1 - iTicTacToeLength] == arrButtonStatus[iCurrentButtonIndex + 1 + iTicTacToeLength] && arrButtonStatus[iCurrentButtonIndex - 1 - iTicTacToeLength] == strButtonStatus) {
+                            bWin = true;
+                            $("<div/>").addClass("strikethrough horizontal").css({"top":"50%", "transform":"skew(0, " + fDegree + "deg)"}).appendTo(".grid-container");
+                            //alert("Backslash Diagonal Win: " + iCurrentButtonIndex);
+                        }
+
+                        if(arrButtonStatus[iCurrentButtonIndex + 1 - iTicTacToeLength] == arrButtonStatus[iCurrentButtonIndex - 1 + iTicTacToeLength] && arrButtonStatus[iCurrentButtonIndex + 1 - iTicTacToeLength] == strButtonStatus) {
+                            bWin = true;
+                            $("<div/>").addClass("strikethrough horizontal").css({"top":"50%", "transform":"skew(0, -" + fDegree + "deg)"}).appendTo(".grid-container");
+                            //alert("Slash Diagonal Win: " + iCurrentButtonIndex);
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return bWin
+        }
+
+
+        fnButtonReset();
+        $("h1 > button").on("click", function() { fnButtonReset()})
+
+        $(".grid-container > button").on("click", function(e) {
+            var strCurrentIcon = $(".grid-container").hasClass("cross") ? "cross" : "circle"
+            $(this).attr("data-status", strCurrentIcon).addClass(strCurrentIcon).attr("disabled",  "disabled");
+
+            if(++iButtonClicked >= 3 && fnCheckWin()) {
+                $(".grid-container").removeClass(strCurrentIcon);
+                $("h1 span#resultPane").html("<img src='images/" + strCurrentIcon + ".png' /> wins.")
+                $(".grid-container > button:not([disabled])").each(function() {
+                    $(this).attr("disabled", "disabled");
+                })
+            } else if (iButtonClicked == 9) {
+                $("h1 span#resultPane").html("Draw!")
+                $(".grid-container").removeClass(strCurrentIcon);
+            } else {
+                $(".grid-container").toggleClass("cross circle")
+            }
+        })
+    }
+    )
+
+    </script>
+</body>
+</html>
